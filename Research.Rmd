@@ -1,0 +1,159 @@
+---
+title: "Research - June.26"
+output: pdf_document
+date: "2023-06-26"
+---
+
+## Sentiment Analysis 
+
+```{r}
+library(tidytext)
+library(textdata)
+get_sentiments("afinn")
+
+```
+
+
+```{r}
+get_sentiments("bing")
+```
+
+```{r}
+get_sentiments("nrc")
+```
+
+
+1.  The code processes the text of Jane Austen's novels by assigning line numbers, identifying chapters, and extracting individual words into a new data frame named tidy_books
+
+cum_sum() with str_detect() identifies the start of each chapter and assigns a cumulative sum that increments at each chapter's start
+unnest_tokens() splits text into individual words --> "word" column created, which contains all words extracted from text
+```{r}
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+```
+
+
+2. the code filters a sentiment lexicon for the "joy" sentiment, filters a data frame for a specific book ("Emma"), performs an inner join to combine the filtered data, and finally counts the occurrences of each word in the merged data, sorting them by count.
+```{r}
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>% #merge tidy_books with nrc_joy
+  count(word, sort = TRUE)
+  
+  tidy_books
+
+```
+
+
+```{r}
+austen_books()
+tidy_books #shows each word of a book on every individual line 
+book_names <- unique(tidy_books[,1])
+nrow(tidy_books)
+book_names
+nrow(book_names)
+```
+
+
+??
+
+```{r}
+library(tidyr)
+
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+```
+
+
+Plot sentiment scores throughout the course of hte book 
+```{r}
+library(ggplot2)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+
+
+## Luke Dataset
+
+import data
+```{r}
+
+df <- read.csv("RenewableResponses.csv")
+```
+
+### pro 
+```{r}
+df_pro.persuade_true <- df %>% 
+  filter(df[,5] == TRUE) 
+FALSE %in% df_pro.persuade_true[,5]
+
+df_pro.persuade_true <- df_pro.persuade_true[,4]
+df_pro.persuade_true_1st <- df_pro.persuade_true[1]
+df_pro.persuade_true_1st
+```
+
+obtain sentiment lexicon 
+```{r}
+sentiments <- get_sentiments("bing")
+```
+
+join sentiment with dataframe 
+```{r}
+df2_vectodf <- data.frame(v2)
+#df2_vectodf[5,]
+```
+
+```{r}
+df3 <- df2_vectodf %>% inner_join(sentiments, by )
+```
+Save first response as a sentence
+```{r}
+head(df3)
+
+df2
+```
+
+
+grab the first response --> save as a string of words 
+segment sentence (string split by space) 
+inner join the sentiment dictionary to that 
+
+write a function that string splits the sentence and then sentiment score 
+lapply function 
+
+```{r}
+df3 <- df2 %>%
+  inner_join(sentiments)
+
+```
+
+
+
+
+
+```{r}
+
+names(df2)
+names(sentiments)
+```
+
+
